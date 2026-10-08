@@ -240,8 +240,8 @@ textarea:focus-visible{outline:2.5px solid var(--violet);outline-offset:2px}
 
   <!-- [패키지 할인 단가] 아래 .pricing 안의 b/em 두 줄을 지우고 <img src="..."> 나 <table> 을 넣으면 된다 -->
   <div class="pricing" data-rise>
-    <b>27년 상반기 1천만 원 이상 집행 캠페인 대상 30% 혜택 제공</b>
-    <em>1. 비즈쿠폰 페이백<br>2. 30% 추가 노출<sup>*</sup></em>
+    <b>27년 상반기 1천만 원 이상 집행 캠페인 대상 혜택 제공</b>
+    <em>1. 비즈쿠폰 30% 페이백<br>2. 30% 추가 노출<sup>*</sup></em>
     <small class="fn">* 추가 노출 지면은 집행 시점 인벤토리 현황에 따라 변동될 수 있습니다.</small>
   </div>
 </div>
@@ -311,22 +311,12 @@ textarea:focus-visible{outline:2.5px solid var(--violet);outline-offset:2px}
         <label class="check" for="cb26q4">
           <input type="checkbox" id="cb26q4" name="comeback26q4"
                  aria-controls="rv26q4" aria-expanded="false">
-          <span>26년 4분기 컴백 · 캠페인 계획이 있으신가요?</span>
+          <span>26년 하반기 컴백/캠페인 계획이 있으신가요?</span>
         </label>
         <div class="reveal" id="rv26q4" hidden>
           <div class="field">
             <label for="sch26q4">광고 진행 희망 일정 <span class="req">*</span></label>
             <input type="text" id="sch26q4" name="schedule26q4" placeholder="예: 2026년 11월 중순 ~ 12월 초">
-          </div>
-          <div class="field">
-            <label for="pkg26q4">희망 팬덤 패키지 <span class="req">*</span></label>
-            <select id="pkg26q4" name="pkg26q4">
-              <option value="">선택해 주세요</option>
-              <option>데뷔 스포트라이트 패키지</option>
-              <option>컴백 테이크오버</option>
-              <option>올스테이지</option>
-              <option>아직 모르겠습니다 (상담 희망)</option>
-            </select>
           </div>
         </div>
       </div>
@@ -335,27 +325,17 @@ textarea:focus-visible{outline:2.5px solid var(--violet);outline-offset:2px}
         <label class="check" for="cb27q1">
           <input type="checkbox" id="cb27q1" name="comeback27q1"
                  aria-controls="rv27q1" aria-expanded="false">
-          <span>27년 1분기 컴백 · 캠페인 계획이 있으신가요?</span>
+          <span>27년 상반기 컴백/캠페인 계획이 있으신가요?</span>
         </label>
         <div class="reveal" id="rv27q1" hidden>
           <div class="field">
             <label for="sch27q1">광고 진행 희망 일정 <span class="req">*</span></label>
             <input type="text" id="sch27q1" name="schedule27q1" placeholder="예: 2027년 2월 중순 ~ 3월 초">
           </div>
-          <div class="field">
-            <label for="pkg27q1">희망 팬덤 패키지 <span class="req">*</span></label>
-            <select id="pkg27q1" name="pkg27q1">
-              <option value="">선택해 주세요</option>
-              <option>데뷔 스포트라이트 패키지</option>
-              <option>컴백 테이크오버</option>
-              <option>올스테이지</option>
-              <option>아직 모르겠습니다 (상담 희망)</option>
-            </select>
-          </div>
         </div>
       </div>
 
-            <div class="g2">
+      <div class="g2">
         <div class="field">
           <label for="purpose">주요 캠페인 목적</label>
           <select id="purpose" name="purpose">
@@ -439,8 +419,8 @@ textarea:focus-visible{outline:2.5px solid var(--violet);outline-offset:2px}
 
   // 체크하면 하위 입력이 열리는 블록들 (분기별 컴백 + 주변 지면 지정)
   var REVEALS = [
-    { key: '26q4', label: '26년 4분기', cb: 'cb26q4', box: 'rv26q4', need: ['sch26q4', 'pkg26q4'] },
-    { key: '27q1', label: '27년 1분기', cb: 'cb27q1', box: 'rv27q1', need: ['sch27q1', 'pkg27q1'] }
+    { key: '26q4', label: '26년 하반기', cb: 'cb26q4', box: 'rv26q4', need: ['sch26q4'] },
+    { key: '27q1', label: '27년 상반기', cb: 'cb27q1', box: 'rv27q1', need: ['sch27q1'] }
   ].map(function (r) {
     r.cbEl = document.getElementById(r.cb);
     r.boxEl = document.getElementById(r.box);
@@ -501,10 +481,8 @@ textarea:focus-visible{outline:2.5px solid var(--violet);outline-offset:2px}
       media: checkedValues('media'),
       comeback26q4: on('26q4'),
       schedule26q4: on('26q4') ? val('sch26q4') : '',
-      pkg26q4: on('26q4') ? val('pkg26q4') : '',
       comeback27q1: on('27q1'),
       schedule27q1: on('27q1') ? val('sch27q1') : '',
-      pkg27q1: on('27q1') ? val('pkg27q1') : '',
       purpose: val('purpose'),
       purposeEtc: purposeEl.value === '기타' ? val('purposeEtc') : '',
       budget: val('budget'),
