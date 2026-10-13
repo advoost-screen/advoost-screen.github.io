@@ -134,8 +134,10 @@ h2{font-size:24px;letter-spacing:-.025em;margin:0 0 22px;
 .field{display:flex;flex-direction:column;gap:7px;min-width:0}
 label{font-size:13.5px;letter-spacing:-.01em}
 .req{color:var(--violet)}
+.bad,.bad:focus-visible{border-color:#D32F55!important;background:#FFF6F8}
+.check.bad{border-color:#D32F55!important;background:#FFF6F8}
 input[type=text],input[type=tel],input[type=email],select{
-  font:inherit;font-size:15px;color:var(--ink);background:#FCFAFD;
+  font:inherit;font-size:16px;color:var(--ink);background:#FCFAFD;
   border:1px solid var(--line);border-radius:11px;padding:12px 13px;width:100%;min-width:0}
 select{appearance:none;background-image:
   linear-gradient(45deg,transparent 50%,var(--violet) 50%),
@@ -195,7 +197,7 @@ input:focus-visible,select:focus-visible,button:focus-visible,.check:focus-withi
 @media (max-width:440px){ .row{grid-template-columns:1fr;gap:3px} h2{font-size:21px} }
 
 /* ── ADVoost Screen 전용 추가 ── */
-textarea{font:inherit;font-size:15px;color:var(--ink);background:#FCFAFD;
+textarea{font:inherit;font-size:16px;color:var(--ink);background:#FCFAFD;
   border:1px solid var(--line);border-radius:11px;padding:12px 13px;width:100%;
   min-width:0;min-height:96px;resize:vertical;line-height:1.55}
 textarea:focus-visible{outline:2.5px solid var(--violet);outline-offset:2px}
@@ -504,13 +506,17 @@ textarea:focus-visible{outline:2.5px solid var(--violet);outline-offset:2px}
     };
   }
 
+  // 문제가 있으면 { el: 문제의 입력칸, msg: 안내문 } 을 돌려준다.
+  // el 을 같이 주는 이유 — 문서가 5화면 높이라 메시지만 띄우면 사용자가 어디가 문제인지 못 찾는다.
   function invalid(d) {
-    if (!d.company) return '회사명을 입력해 주세요.';
-    if (!d.artist) return '담당 아티스트명을 입력해 주세요.';
-    if (!d.name) return '성함을 입력해 주세요.';
-    if (!d.phone) return '연락처를 입력해 주세요.';
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email)) return '이메일 형식을 확인해 주세요.';
-    if (!d.privacy) return '개인정보 수집·이용에 동의해 주세요.';
+    if (!d.company) return { el: form.company, msg: '회사명을 입력해 주세요.' };
+    if (!d.artist)  return { el: form.artist,  msg: '담당 아티스트명을 입력해 주세요.' };
+    if (!d.name)    return { el: form.name,    msg: '성함을 입력해 주세요.' };
+    if (!d.phone)   return { el: form.phone,   msg: '연락처를 입력해 주세요.' };
+    if (!/^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/.test(d.email))
+      return { el: form.email, msg: '이메일 주소를 확인해 주세요. (영문으로 입력해 주세요)' };
+    if (purposeEl.value === '기타' && !d.purposeEtc)
+      return { el: purposeEtcEl, msg: '어떤 캠페인인지 적어 주세요.' };
     for (var i = 0; i < REVEALS.length; i++) {
       var r = REVEALS[i];
       if (!r.cbEl.checked) continue;
@@ -518,11 +524,22 @@ textarea:focus-visible{outline:2.5px solid var(--violet);outline-offset:2px}
         if (!r.needEl[k].value.trim()) {
           var lab = form.querySelector('label[for="' + r.need[k] + '"]');
           var what = lab ? lab.textContent.replace('*', '').trim() : '필수 항목';
-          return r.label + ' — ' + what + '을(를) 입력해 주세요.';
+          return { el: r.needEl[k], msg: r.label + ' — ' + what + '을(를) 입력해 주세요.' };
         }
       }
     }
+    if (!d.privacy) return { el: document.getElementById('privacy'), msg: '개인정보 수집·이용에 동의해 주세요.' };
     return null;
+  }
+
+  /** 문제의 칸으로 스크롤·포커스하고 테두리를 빨갛게 표시한다 */
+  function point(el) {
+    form.querySelectorAll('.bad').forEach(function (n) { n.classList.remove('bad'); });
+    if (!el) return;
+    var mark = el.type === 'checkbox' ? (el.closest('.check') || el) : el;
+    mark.classList.add('bad');
+    try { mark.scrollIntoView({ block: 'center' }); } catch (err) { mark.scrollIntoView(); }
+    if (el.focus) { try { el.focus({ preventScroll: true }); } catch (err) { el.focus(); } }
   }
 
   // ───────────────────────────────────────────────────────────
@@ -532,33 +549,61 @@ textarea:focus-visible{outline:2.5px solid var(--violet);outline-offset:2px}
   var TOKEN    = "fnc26-dooh-8cb58d51a241";   // Code.gs 의 SECRET 과 반드시 동일해야 한다
   // ───────────────────────────────────────────────────────────
 
+  var sending = false, done = false;   // 전송 중 / 제출 완료 플래그
+
   function finish() {
-    form.reset(); syncReveal(); syncPurpose(); btn.disabled = false;
-    say('ok', '제출이 완료되었습니다. 감사합니다.');
-    form.company.focus();
+    done = true; sending = false;
+    form.reset(); syncReveal(); syncPurpose();
+    form.querySelectorAll('.bad').forEach(function (n) { n.classList.remove('bad'); });
+    // 버튼을 되살리지 않는다 — 비워진 폼을 다시 누르면 성공 문구가 빨간 오류로 덮이기 때문.
+    btn.disabled = true; btn.textContent = '제출 완료';
+    say('ok', '제출이 완료되었습니다. 감사합니다. 추가로 신청하시려면 페이지를 새로고침해 주세요.');
+    // focus() 는 화면을 폼 맨 위로 끌어올려 이 문구를 화면 밖으로 밀어낸다. 대신 문구로 스크롤한다.
+    try { statusEl.scrollIntoView({ block: 'center' }); } catch (err) {}
   }
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
+    if (done || sending) return;   // 완료됐거나 전송 중이면 무시 (Enter 중복 제출 차단)
     var d = readForm();
     var bad = invalid(d);
-    if (bad) { say('err', bad); return; }
+    if (bad) { say('err', bad.msg); point(bad.el); return; }
+    point(null);
+    sending = true;
     btn.disabled = true; say('info', '제출하는 중…');
 
     if (dbRef) {             // 아티팩트로 열린 경우
       dbRef.collection('leads').add(d).then(function () { finish(); })['catch'](function () {
-        btn.disabled = false;
+        sending = false; btn.disabled = false;
         say('err', '제출에 실패했습니다. 잠시 후 다시 시도해 주세요.');
       });
       return;
     }
 
     if (ENDPOINT) {          // 단독 HTML + 시트 연동
-      // no-cors 라 브라우저가 응답을 읽을 수 없다. 실제 적립 여부는 시트에서 확인한다.
-      fetch(ENDPOINT, { method: 'POST', mode: 'no-cors',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                        body: JSON.stringify(d) })
-        .then(function () { finish(); })['catch'](function () { finish(); });
+      // no-cors 라 HTTP 상태코드는 못 읽지만, 오프라인·연결 끊김은 reject 로 잡힌다.
+      // 그 경우 입력값을 지우지 않고 그대로 두어 다시 누를 수 있게 한다.
+      var settled = false, timer = null, ac = null;
+      var fail = function () {
+        if (settled) return;
+        settled = true; if (timer) clearTimeout(timer);
+        sending = false; btn.disabled = false;
+        say('err', '전송에 실패했습니다. 입력하신 내용은 그대로 두었으니, 네트워크를 확인하고 다시 [제출하기]를 눌러 주세요.');
+        try { statusEl.scrollIntoView({ block: 'center' }); } catch (err) {}
+      };
+      var opts = { method: 'POST', mode: 'no-cors', keepalive: true,
+                   headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                   body: JSON.stringify(d) };
+      // 응답이 영영 안 오면 버튼이 잠긴 채 멈춘다 → 12초 후 되살린다
+      if (typeof AbortController !== 'undefined') {
+        ac = new AbortController(); opts.signal = ac.signal;
+        timer = setTimeout(function () { try { ac.abort(); } catch (err) {} fail(); }, 12000);
+      } else {
+        timer = setTimeout(fail, 12000);
+      }
+      fetch(ENDPOINT, opts)
+        .then(function () { if (settled) return; settled = true; clearTimeout(timer); finish(); })
+        ['catch'](fail);
       return;
     }
 
