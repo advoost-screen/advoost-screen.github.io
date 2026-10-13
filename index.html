@@ -154,6 +154,7 @@ input:focus-visible,select:focus-visible,button:focus-visible,.check:focus-withi
   background:rgba(247,242,255,.72);border:1px solid var(--line);border-radius:14px}
 .reveal[hidden]{display:none}
 .field[hidden]{display:none}
+.field input[hidden]{display:none}
 .submit{font:inherit;font-size:16.5px;color:#fff;cursor:pointer;
   background:linear-gradient(92deg,var(--violet),var(--blue));border:0;border-radius:13px;
   padding:16px 24px;width:100%;letter-spacing:-.01em}
@@ -271,8 +272,8 @@ textarea:focus-visible{outline:2.5px solid var(--violet);outline-offset:2px}
           <input type="text" id="name" name="name" autocomplete="name" required>
         </div>
         <div class="field">
-          <label for="title">직함 <span class="req">*</span></label>
-          <input type="text" id="title" name="title" autocomplete="organization-title" required>
+          <label for="title">직함</label>
+          <input type="text" id="title" name="title" autocomplete="organization-title">
         </div>
       </div>
       <div class="g2">
@@ -345,6 +346,9 @@ textarea:focus-visible{outline:2.5px solid var(--violet);outline-offset:2px}
             <option>신인 데뷔 인지 확보</option>
             <option>기타</option>
           </select>
+          <input type="text" id="purposeEtc" name="purposeEtc"
+                 aria-label="기타 캠페인 목적 직접 입력"
+                 placeholder="어떤 캠페인인지 적어 주세요" hidden>
         </div>
         <div class="field">
           <label for="budget">1주 희망 예산 규모</label>
@@ -357,11 +361,6 @@ textarea:focus-visible{outline:2.5px solid var(--violet);outline-offset:2px}
             <option>미정</option>
           </select>
         </div>
-      </div>
-
-      <div class="field" id="purposeEtcWrap" hidden>
-        <label for="purposeEtc">기타 — 어떤 캠페인인지 적어 주세요</label>
-        <input type="text" id="purposeEtc" name="purposeEtc" placeholder="자유롭게 작성해 주세요">
       </div>
 
       <div class="field">
@@ -452,8 +451,8 @@ textarea:focus-visible{outline:2.5px solid var(--violet);outline-offset:2px}
 
   // 캠페인 목적에서 '기타'를 고르면 서술형 입력칸이 열린다
   var purposeEl = document.getElementById('purpose');
-  var purposeEtcWrap = document.getElementById('purposeEtcWrap');
-  function syncPurpose() { purposeEtcWrap.hidden = purposeEl.value !== '기타'; }
+  var purposeEtcEl = document.getElementById('purposeEtc');
+  function syncPurpose() { purposeEtcEl.hidden = purposeEl.value !== '기타'; }
   purposeEl.addEventListener('change', syncPurpose);
   syncPurpose();
 
@@ -509,7 +508,6 @@ textarea:focus-visible{outline:2.5px solid var(--violet);outline-offset:2px}
     if (!d.company) return '회사명을 입력해 주세요.';
     if (!d.artist) return '담당 아티스트명을 입력해 주세요.';
     if (!d.name) return '성함을 입력해 주세요.';
-    if (!d.title) return '직함을 입력해 주세요.';
     if (!d.phone) return '연락처를 입력해 주세요.';
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email)) return '이메일 형식을 확인해 주세요.';
     if (!d.privacy) return '개인정보 수집·이용에 동의해 주세요.';
