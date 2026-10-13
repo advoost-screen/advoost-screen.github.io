@@ -364,8 +364,21 @@ textarea:focus-visible{outline:2.5px solid var(--violet);outline-offset:2px}
         <input type="text" id="purposeEtc" name="purposeEtc" placeholder="자유롭게 작성해 주세요">
       </div>
 
+      <div class="field">
+        <p class="note" style="margin:0 0 9px">
+          <b>개인정보 수집·이용 안내</b><br>
+          · 수집 항목: 회사명, 담당 아티스트명, 성함, 직함, 연락처, 이메일, 관심 지면, 광고 희망 일정, 캠페인 목적, 희망 예산<br>
+          · 이용 목적: FAN:NECT 참석자 전용 NAVER 광고 혜택 안내 및 광고 집행 상담<br>
+          · 보유 기간: 행사 종료 후 6개월 보관 후 파기<br>
+          · 동의를 거부하실 수 있으며, 거부 시 혜택 신청이 제한됩니다.
+        </p>
+        <label class="check" for="privacy">
+          <input type="checkbox" id="privacy" name="privacy">
+          <span>[필수] 위 개인정보 수집·이용에 동의합니다.</span>
+        </label>
+      </div>
+
       <button class="submit" id="submitBtn" type="submit">제출하기</button>
-      <p class="note">제출하시면 본 행사와 관련해 NAVER 광고세일즈가 연락드리는 데 동의하는 것으로 간주합니다.</p>
       <p class="status" id="status" role="status" aria-live="polite"></p>
     </div>
 
@@ -486,6 +499,7 @@ textarea:focus-visible{outline:2.5px solid var(--violet);outline-offset:2px}
       purpose: val('purpose'),
       purposeEtc: purposeEl.value === '기타' ? val('purposeEtc') : '',
       budget: val('budget'),
+      privacy: document.getElementById('privacy').checked,
       token: TOKEN,
       submittedAt: new Date().toISOString()
     };
@@ -498,6 +512,7 @@ textarea:focus-visible{outline:2.5px solid var(--violet);outline-offset:2px}
     if (!d.title) return '직함을 입력해 주세요.';
     if (!d.phone) return '연락처를 입력해 주세요.';
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email)) return '이메일 형식을 확인해 주세요.';
+    if (!d.privacy) return '개인정보 수집·이용에 동의해 주세요.';
     for (var i = 0; i < REVEALS.length; i++) {
       var r = REVEALS[i];
       if (!r.cbEl.checked) continue;
